@@ -1,0 +1,56 @@
+import tkinter as tk
+from typing import Callable
+
+class CalculatorModel:
+    def add(self, a: float, b: float) -> float:
+        return a + b
+
+    def subtract(self, a: float, b: float) -> float:
+        return a - b
+
+class CalculatorViewModel:
+    def __init__(self):
+        self.model = CalculatorModel()
+        self.input1 = tk.StringVar(value="")
+        self.input2 = tk.StringVar(value="")
+        self.result = tk.StringVar(value="")
+
+    def add_command(self):
+        try:
+            a = float(self.input1.get())
+            b = float(self.input2.get())
+            self.result.set(str(self.model.add(a, b)))
+        except ValueError:
+            self.result.set("Invalid input")
+
+    def subtract_command(self):
+        try:
+            a = float(self.input1.get())
+            b = float(self.input2.get())
+            self.result.set(str(self.model.subtract(a, b)))
+        except ValueError:
+            self.result.set("Invalid input")
+
+class CalculatorView:
+    def __init__(self, root: tk.Tk, view_model: CalculatorViewModel):
+        self.root = root
+        self.view_model = view_model
+        self.root.title("Simple Calculator MVVM")
+        self.root.geometry("300x200")
+
+        # Input fields
+        tk.Entry(root, textvariable=self.view_model.input1).pack(pady=5)
+        tk.Entry(root, textvariable=self.view_model.input2).pack(pady=5)
+
+        # Result label
+        tk.Label(root, textvariable=self.view_model.result).pack(pady=5)
+
+        # Buttons
+        tk.Button(root, text="Add", command=self.view_model.add_command).pack(pady=5)
+        tk.Button(root, text="Subtract", command=self.view_model.subtract_command).pack(pady=5)
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    view_model = CalculatorViewModel()
+    app = CalculatorView(root, view_model)
+    root.mainloop()
