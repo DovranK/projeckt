@@ -1,0 +1,108 @@
+import tkinter as tk
+
+class CalculatorModel:
+    def add(self, a: float, b: float) -> float:
+        return a + b
+
+    def subtract(self, a: float, b: float) -> float:
+        return a - b
+
+    def multiply(self, a: float, b: float) -> float:
+        return a * b
+
+    def divide(self, a: float, b: float) -> float:
+        if b == 0:
+            raise ValueError("Division by zero is not allowed")
+        return a / b
+
+class CalculatorViewModel:
+    def __init__(self):
+        self.model = CalculatorModel()
+        self.first_number = 0.0
+        self.second_number = 0.0
+        self.result = 0.0
+        self._observers = []
+
+    def add_observer(self, observer):
+        self._observers.append(observer)
+
+    def notify_observers(self):
+        for observer in self._observers:
+            observer()
+
+    def set_first_number(self, value: str):
+        try:
+            self.first_number = float(value)
+            self.notify_observers()
+        except ValueError:
+            self.result = "Invalid input"
+            self.notify_observers()
+
+    def set_second_number(self, value: str):
+        try:
+            self.second_number = float(value)
+            self.notify_observers()
+        except ValueError:
+            self.result = "Invalid input"
+            self.notify_observers()
+
+    def add(self):
+        self.result = self.model.add(self.first_number, self.second_number)
+        self.notify_observers()
+
+    def subtract(self):
+        self.result = self.model.subtract(self.first_number, self.second_number)
+        self.notify_observers()
+
+    def multiply(self):
+        self.result = self.model.multiply(self.first_number, self.second_number)
+        self.notify_observers()
+
+    def divide(self):
+        try:
+            self.result = self.model.divide(self.first_number, self.second_number)
+            self.notify_observers()
+        except ValueError as e:
+            self.result = str(e)
+            self.notify_observers()
+
+class CalculatorView:
+    def __init__(self, root, view_model: CalculatorViewModel):
+        self.view_model = view_model
+        self.root = root
+        self.root.title("Simple Calculator MVVM")
+        self.root.geometry("300x200")
+
+        # Bind view model updates
+        self.view_model.add_observer(self.update_ui)
+
+        # UI Elements
+        self.entry1 = tk.Entry(root)
+        self.entry1.pack(pady=5)
+        self.entry1.bind("<KeyRelease>", lambda e: self.view_model.set_first_number(self.entry1.get()))
+
+        self.entry2 = tk.Entry(root)
+        self.entry2.pack(pady=5)
+        self.entry2.bind("<KeyRelease>", lambda e: self.view_model.set_second_number(self.entry2.get()))
+
+        self.result_label = tk.Label(root, text="Result: 0")
+        self.result_label.pack(pady=5)
+
+        # Buttons
+        button_frame = tk.Frame(root)
+        button_frame.pack(pady=5)
+        tk.Button(button_frame, text="+", command=self.view_model.add).pack(side=tk.LEFT, padx=5)
+        tk.Button(button_frame, text="-", command=self.view_model.subtract).pack(side=tk.LEFT, padx=5)
+        tk.Button(button_frame, text="*", command=self.view_model.multiply).pack(side=tk.LEFT, padx=5)
+        tk.Button(button_frame, text="/", command=self.view_model.divide).pack(side=tk.LEFT, padx=5)
+
+        self.update_ui()
+
+    def update_ui(self):
+        self.result_label.config(text=f"Result: {self.view_model.result}")
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    view_model = CalculatorViewModel()
+    app = CalculatorView(root, view_model)
+    root.mainloop()
